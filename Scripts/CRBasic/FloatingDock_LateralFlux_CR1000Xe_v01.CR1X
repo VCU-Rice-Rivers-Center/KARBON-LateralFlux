@@ -1,0 +1,615 @@
+'CR1000X Series Datalogger
+'LateralFlux_CR1000Xe Data Logger Program
+
+'Date: 07/21/2026
+'Program author: Lauren Wick
+
+' Change Log:
+' 08/10/2026 - Update Rad7 bytes from 108 to 120
+' 08/11/2026 - Add LI-850 CO2/H2O/CellTemp/CellPres via RS-232 (COM1 = C1/C2)
+'              LI-850 averages appended to FLUX_7810 table
+' 08/13/2026 - Changed comms mode on C1 from TTL to RS-232
+' 10/07/2026 - Added <RAW>FALSE</RAW> to output string in LI-850
+
+'Declare Constants
+Const RAD7NumParams = 23
+
+'Declare Public Variables
+Public PTemp, Batt_volt
+Public Flag(10)
+
+'RAD7 Variables, Naming conventions to match SERC SARGE headers
+'Data table with field name and units here: https://durridge.com/documentation/RAD7%20Manual.pdf
+'Data string that will be coming off of the Rad7
+Public String_RAD7 As String * 2000
+Public Rad7Bytes
+Public Rad7raw(23) As String * 26
+Public Rad7(23)
+Dim k,
+
+'Each record contains 23 fields
+Alias Rad7(1) = Record_RAD7
+Alias Rad7(2) = Year_RAD7
+Alias Rad7(3) = Month_RAD7
+Alias Rad7(4) = Day_Rad7
+Alias Rad7(5) = Hour_Rad7
+Alias Rad7(6) = Minute_Rad7
+Alias Rad7(7) = Total_Counts_Rad7
+Alias Rad7(8) = Live_Time_Rad7
+Alias Rad7(9) = PER_TOT_A_Rad7
+Alias Rad7(10) =PER_TOT_B_Rad7
+Alias Rad7(11) =PER_TOT_C_Rad7
+Alias Rad7(12) =PER_TOT_D_Rad7
+Alias Rad7(13) =High_Voltage_Level_Rad7
+Alias Rad7(14) =High_Voltage_Duty_Rad7
+Alias Rad7(15) =Temp_sample_Rad7
+Alias Rad7(16) =RH_sample_Rad7
+Alias Rad7(17) =Leakage_Current_Rad7
+Alias Rad7(18) =Battery_Volt_Rad7
+Alias Rad7(19) =Pump_current_Rad7
+Alias Rad7(20) =Flags_Byte_Rad7
+Alias Rad7(21) =Radon_concentration_Rad7
+Alias Rad7(22) =Radon_concentration_uncertainty_Rad7
+Alias Rad7(23) =Units_Byt_Rad7
+'Units declaration for RAD7 (Durridge)
+Units(Record_RAD7) =  ### 'Ranges from 001 to 999
+Units(Year_RAD7)= YY
+Units(Month_RAD7 = MM
+Units(Day_Rad7)= dd
+Units(Hour_Rad7)= hh
+Units(Minute_Rad7)= mm
+Units(Total_Counts_Rad7) = integer 'Integer indicating total counts recorded during test
+Units(Live_Time_Rad7)= minutes ' expressed in minutes
+Units(PER_TOT_A_Rad7) = percent
+Units(PER_TOT_B_Rad7) = percent
+Units(PER_TOT_C_Rad7) = percent
+Units(PER_TOT_D_Rad7) = percent
+' These 4 windows will not always add up to 100% since counts can come into channels below or above these windows.
+Units(High_Voltage_Level_Rad7)= Volts ' ranges from 2200-2300V
+Units(High_Voltage_Duty_Rad7) = percent ' ranges from 0-100% usually between 10-20%
+Units(Temp_sample_Rad7)= celcius ' check Rad7 setup
+Units(RH_sample_Rad7)= percent' keep below 10%
+Units(Leakage_Current_Rad7)= integer' keep below 20
+Units(Battery_Volt_Rad7) = Volts ' check below 6
+Units(Pump_current_Rad7) = mA '
+'Ranges from 0-260mA.  Typically 40-180mA, depending on the pump.  Higher than normal values indicate a clogged filter or other obstruction, or a faulty pump.
+Units(Flags_Byte_Rad7)= integer  ' check manual for definition
+Units(Radon_concentration_Rad7)= Bq/m3
+Units(Radon_concentration_uncertainty_Rad7)= Bq/m3
+Units(Units_Byt_Rad7) = integer' see manual
+
+
+'7810 Variables
+Public LI7810(51)
+Public tcpip_socket_status7810 As Long
+Public LI7810_time As Long
+Public socket7810 As Long = 0
+Public DATA_string7810 As String * 1000 ' Ethernet data is initially read into this variable
+Public NBR7810 As Long
+Public IP7810 As String *17 = "192.168.13.210"
+'
+
+Alias LI7810(1) = Seconds
+Alias LI7810(2) = Nanoseconds
+Alias LI7810(3) = NDX
+Alias LI7810(4) = Diag
+Alias LI7810(5) = Remark
+Alias LI7810(8) = H2O
+Alias LI7810(9) = H2
+Alias LI7810(10) = CH4
+Alias LI7810(11) = cavity_p
+Alias LI7810(12) = cavity_t
+Alias LI7810(13) = laser_phase_p
+Alias LI7810(14) = laser_t
+Alias LI7810(15) = residual
+Alias LI7810(16) = ringdown
+Alias LI7810(17) = thermal_enc_t
+Alias LI7810(18) = phase_err
+Alias LI7810(19) = laser_t_shift
+Alias LI7810(20) = vin
+Alias LI7810(21) = cavity_p_sp
+Alias LI7810(22) = board_t
+Alias LI7810(23) = case_t
+Alias LI7810(24) = exfit_tau_rd1
+Alias LI7810(25) = peak_ht_1
+Alias LI7810(26) = exfit_tau_rd2
+Alias LI7810(27) = peak_ht_2
+Alias LI7810(28) = tec_sp
+Alias LI7810(29) = phase_ctrl_out
+Alias LI7810(30) = meas_phase
+Alias LI7810(31) = laser_phase_sp
+Alias LI7810(32) = num_peaks_win
+Alias LI7810(33) = post_ringdwn_1_ign_len
+Alias LI7810(34) = ringdwn_1_loc
+Alias LI7810(35) = peak_x0
+Alias LI7810(36) = xderiv_weight
+Alias LI7810(37) = xderiv2_weight
+Alias LI7810(38) = ch4_spec_weight
+Alias LI7810(39) = co2_spec_weight
+Alias LI7810(40) = h2o_spec_weight
+Alias LI7810(41) = start_freq
+Alias LI7810(42) = cavity_htr_w
+Alias LI7810(43) = laser_ref_pwr
+Alias LI7810(44) = offset_weight
+Alias LI7810(45) = slope_weight
+Alias LI7810(46) = evenodd_weight
+Alias LI7810(47) = evenodd_lin_weight
+Alias LI7810(48) = num_skipped_modes
+Alias LI7810(49) = pump_sp
+Alias LI7810(50) = pump_tach_ph
+Alias LI7810(51) = chk
+
+'Constants to convert unix time to local time
+'Public TimeLong7820 As Long
+Public TimeLong7810 As Long
+
+'--- LI-850 Variables ---
+' RS-232: 9600 baud, 8 data bits, no parity, 1 stop bit
+' Connect LI-850 RS-232 port to CR1000X COM1 (control ports C1/C2)
+' STRIP mode enabled: LI-850 outputs space-delimited values (no XML tags)
+' Output field order configured below: CO2, H2O, CELLTEMP, CELLPRES
+Public LI850(4)
+Public DATA_string850 As String * 300
+Public NBR850 As Long
+Public FirstByteAsASCII As Long
+
+Alias LI850(1) = CellTemp_LI850
+Alias LI850(2) = CellPres_LI850
+Alias LI850(3)= CO2_LI850
+Alias LI850(4) = H2O_LI850
+
+Units(CO2_LI850)     = ppm
+Units(H2O_LI850)     = mmol/mol
+Units(CellTemp_LI850)= Celsius
+Units(CellPres_LI850)= kPa
+
+ConstTable (NewConstTable)
+  Const Scan_interval = 100 '200 mSec 100 mSec 50 mSec
+  Const Daystosec  = 86400
+  Const Daysto1990 = 7305   ' from 1 January 1970
+  Const utcoffset  = 21600 ' utc offset in seconds - this is important for
+EndConstTable
+
+'--- Sontek ADCP Variables ---'
+
+Public Sontekdata As String * 2000
+Public Sontekbytes
+Public Sontekraw(26) As String *26,
+Public Sontek(26)
+Public SONTEK_ID As String *10
+Public sontek_serialIn
+
+
+' see page 96 Table 2 of Sontek IQ manual
+'Alias Sontek(1) = SONTEK_ID ' Q = VA
+Alias Sontek(2) = Sample_number ' water depth of user-defined channel
+Alias Sontek(3) = yyyy
+Alias Sontek(4) = MM ' 
+Alias Sontek(5) = dd
+Alias Sontek(6) = hh
+Alias Sontek(7) = Minute
+Alias Sontek(8) = ss 
+Alias Sontek(9) = Flowrate ' Q = VA
+Alias Sontek(10) = Stage ' water depth of user-defined channel
+Alias Sontek(11) = Mean_velocity
+Alias Sontek(12) = Total_volume ' Q * time
+Alias Sontek(13) = Water_depth
+Alias Sontek(14) = Index_velocity
+Alias Sontek(15) = Cross_area
+Alias Sontek(16) = Water_temperature
+Alias Sontek(17) = System_status
+Alias Sontek(18) = Velocity_XZxc
+Alias Sontek(19) = Velocity_XZzc
+Alias Sontek(20) = Velocity_XZxL
+Alias Sontek(21) = Velocity_XZxR
+Alias Sontek(22) = Batt_Vol_Sontek
+Alias Sontek(23) = Pitch_angle
+Alias Sontek(24) = Roll_angle
+Alias Sontek(25) = Perc_submergance
+Alias Sontek(26) = IceScore
+
+' Unit declaration sontek
+' Units Timestamp_sontek = mmddyy
+Units Flowrate = m
+Units Stage = m
+Units Mean_velocity = m/s
+Units Total_volume = m3
+Units Water_depth = m
+Units Index_velocity = m/s
+Units Cross_area = m2
+Units Water_temperature = Celsius
+Units System_status = unitless
+Units Velocity_XZxc = m/s
+Units Velocity_XZzc = m/s
+Units Velocity_XZxL = m/s
+Units Velocity_XZxR = m/s
+Units Batt_Vol_Sontek = volts
+Units Pitch_angle = degrees
+Units Roll_angle = degrees
+Units Perc_submergance = percent
+Units IceScore = integer
+
+'--- EXO2 Variables ---'
+Public EXO(27)
+Public EXO2(4) As String *72
+
+'Array definition
+Public Sonde_data As String *1000 'SNs
+Public Sonde_data2 As String *1000 'SNs
+
+Public pSonde_data As String *1000 'SNs
+Public pSonde_data2 As String *1000 'SNs
+
+'Alias declaration EXO2 Sonde
+Alias EXO(1)=Date
+Alias EXO(2)=Time
+Alias EXO(3)=Chlorophyll_RFU
+Alias EXO(4)=Chlorophyll_ugL
+Alias EXO(5)=Conductivity
+Alias EXO(6)=FDOM_QSU
+Alias EXO(7)=FDOM_RFU
+Alias EXO(8)=NLF_conductivity
+Alias EXO(9)=ODO_sat
+Alias EXO(10)=ODO_local
+Alias EXO(11)=ODO_MgL
+Alias EXO(12)=Pressure_psia
+Alias EXO(13)=Salinity_PPT
+Alias EXO(14)=Specific_Conductivity_uScm
+Alias EXO(15)=BGA_PE_RFU
+Alias EXO(16)=BGA_PE_ugL
+Alias EXO(17)=TDS_mg_L
+Alias EXO(18)=Turbidity_FNU
+Alias EXO(19)=TSS_MgL
+Alias EXO(20)=Wiper_Position_mv
+Alias EXO(21)=pH
+Alias EXO(22)=pH_mv
+Alias EXO(23)=Temp_C
+Alias EXO(24)=Depth_m
+Alias EXO(25)=Battery_v
+Alias EXO(26)=Cable_v
+Alias EXO(27)=Wiper_Current_ma
+
+'Unit declaration EXO2 Sonde
+Units Date = mmddyy
+Units Time = hhmmss
+Units Chlorophyll_RFU = RFU
+Units Chlorophyll_ugL = ug/L
+Units Conductivity = uS/cm
+Units FDOM_QSU = QSU
+Units FDOM_RFU = RFU
+Units NLF_conductivity = uS/cm 
+Units ODO_sat = %Sat
+Units ODO_local = %SatLocal
+Units ODO_MgL = mg/L
+Units Pressure_psia =psia
+Units Salinity_PPT =ppt
+Units Specific_Conductivity_uScm =uS/cm
+Units BGA_PE_RFU = RFU
+Units BGA_PE_ugL =ug/L
+Units TDS_mg_L = mg/L
+Units Turbidity_FNU = FNU
+Units Wiper_Position_mv =mv
+Units pH = pH
+Units pH_mv = mv
+Units Temp_C = Celsius
+Units Depth_m = meters
+Units Battery_v = volts
+Units Cable_v= volts
+Units Wiper_Current_ma= ma
+Units TSS_MgL = mg/L 
+
+'Alias declaration EXO2 Sonde
+Alias EXO2(1) = sn
+Alias EXO2(2) = snn
+
+'Declare Private Variables
+
+'Define Data Tables
+DataTable (Rad7Table,1,-1) 'Set table size to # of records, or -1 to autoallocate.
+	'RAD7 Data Interval is 15 minutes
+  DataInterval (0,15,Min,10)
+
+  'Sample RAD7 Data Table
+  Sample(1,Record_RAD7,Long)
+  Sample(1,Year_RAD7,Long)
+  Sample(1,Month_RAD7,Long)
+  Sample(1,Day_Rad7,Long)
+  Sample(1,Hour_Rad7,Long)
+  Sample(1,Minute_Rad7, Long)
+  Sample(1,Total_Counts_Rad7,FP2)
+  Sample(1,Live_Time_Rad7,Long)
+  Sample(1,PER_TOT_A_Rad7,FP2)
+  Sample(1,PER_TOT_B_Rad7,FP2)
+  Sample(1,PER_TOT_C_Rad7,FP2)
+  Sample(1,PER_TOT_D_Rad7,FP2)
+  Sample(1,High_Voltage_Level_Rad7, FP2)
+  Sample(1,High_Voltage_Duty_Rad7,FP2)
+  Sample(1,Temp_sample_Rad7, FP2)
+  Sample(1,RH_sample_Rad7, FP2)
+  Sample(1,Leakage_Current_Rad7,FP2)
+  Sample(1,Battery_Volt_Rad7,FP2)
+  Sample(1,Pump_current_Rad7,FP2)
+  Sample(1,Flags_Byte_Rad7, Long)
+  Sample(1,Radon_concentration_Rad7, IEEE4)
+  Sample(1,Radon_concentration_uncertainty_Rad7, IEEE4)
+  Sample(1,Units_Byt_Rad7,Long)
+
+EndTable
+
+'7810 Table - LI-850 averages appended
+DataTable (FLUX_7810,Flag(9),-1)
+  '7810 Data Interval 10 seconds
+  DataInterval (0,10,Sec,100)
+  Sample(1,TimeLong7810,Nsec)
+  Sample (1,LI7810_time,Long)
+  Sample (4,LI7810(1),IEEE4)
+  Sample (43,LI7810(8),IEEE4)
+
+  '--- LI-850 Averaged Measurements ---
+  ' Average() accumulates all scan readings within each 10-sec output interval.
+  ' NAN values (e.g. when LI-850 is not sending) are excluded from the average.
+ ' Average(1,CO2_LI850,IEEE4,False)
+  'Average(1,H2O_LI850,IEEE4,False)
+  'Average(1,CellTemp_LI850,IEEE4,False)
+  'Average(1,CellPres_LI850,IEEE4,False)
+  
+  Sample(1, CO2_LI850, IEEE4)
+  Sample(1, H2O_LI850, IEEE4)
+  Sample(1, CellTemp_LI850, IEEE4)
+  Sample(1, CellPres_LI850, IEEE4)
+
+EndTable
+
+'Sontek Table
+DataTable(SontekTable, Flag(6), -1)
+  DataInterval (0,3,Min,10)
+  Sample(1, SONTEK_ID, String) ' Q = VA
+  Sample(1,Sample_number, FP2) ' water depth of user-defined channel
+  Sample(1, yyyy, FP2)
+  Sample(1,MM, FP2)
+  Sample(1, dd, FP2)
+  Sample(1, hh, FP2)
+  Sample(1,Minute, FP2)
+  Sample(1, ss, FP2) 
+  Sample(1,Flowrate,IEEE4)
+  Sample(1,Stage,IEEE4)
+  Sample(1,Mean_velocity,IEEE4)
+  Sample(1,Total_volume,IEEE4)
+  Sample(1,Water_depth,IEEE4)
+  Sample(1,Index_velocity,IEEE4)
+  Sample(1,Cross_area,IEEE4)
+  Sample(1,Water_temperature,IEEE4)
+  Sample(1,System_status,IEEE4)
+  Sample(1,Velocity_XZxc,IEEE4)
+  Sample(1,Velocity_XZzc,IEEE4)
+  Sample(1,Velocity_XZxL,IEEE4)
+  Sample(1,Velocity_XZxR,IEEE4)
+  Sample(1,Batt_Vol_Sontek,IEEE4)
+  Sample(1,Pitch_angle,IEEE4)
+  Sample(1,Roll_angle,IEEE4)
+  Sample(1,Perc_submergance,IEEE4)
+  Sample(1,IceScore,IEEE4)
+EndTable
+
+'EXO2 Table
+DataTable (ExoTable, Flag(8), -1)
+  DataInterval (0,6,Min,10)
+  Sample (1, Date, IEEE4)
+  Sample(1,Time,IEEE4)
+  Sample(1,Chlorophyll_RFU,IEEE4)
+  Sample(1,Chlorophyll_ugL,IEEE4)
+  Sample(1,Conductivity,IEEE4)
+  Sample(1,FDOM_QSU,IEEE4)
+  Sample(1,FDOM_RFU,IEEE4)
+  Sample(1,NLF_conductivity,IEEE4)
+  Sample(1,ODO_sat,IEEE4)
+  Sample(1,ODO_local,IEEE4)
+  Sample(1,ODO_MgL,IEEE4)
+  Sample(1,Pressure_psia,IEEE4)
+  Sample(1,Salinity_PPT,IEEE4)
+  Sample(1,Specific_Conductivity_uScm,IEEE4)
+  Sample(1,BGA_PE_RFU,IEEE4)
+  Sample(1,BGA_PE_ugL,IEEE4)
+  Sample(1,TDS_mg_L,IEEE4)
+  Sample(1,Turbidity_FNU,IEEE4)
+  Sample(1,Wiper_Position_mv,IEEE4)
+  Sample(1,pH,IEEE4)
+  Sample(1,pH_mv,IEEE4)
+  Sample(1,Temp_C,IEEE4)
+  Sample(1,Depth_m,IEEE4)
+  Sample(1, Battery_v,IEEE4)
+  Sample(1, Cable_v,IEEE4)
+  Sample(1, Wiper_Current_ma,IEEE4)
+    
+  Sample (1,sn,String)
+  Sample (1,snn,String)
+EndTable
+'Define Subroutines
+'Sub
+	'EnterSub instructions here
+'EndSub
+
+SequentialMode
+'Main Program
+BeginProg
+  TCPClose(101)
+
+  'Flags for sensor-level control
+  Flag(6) = -1 'SONTEK
+  Flag(7) = -1 'RAD7
+  Flag(8) = -1 'EXO
+  Flag(9) = -1 '7810
+
+  SerialOpen (COMRS232,9600,0,0,2048) 'Rad7 - 8 bit, no parity, 1 bit stop
+	SerialFlush (COMRS232)
+	
+  SerialOpen (ComC5,9600,0,0,2000) 'Sontek
+  SerialFlush (ComC5)
+	
+  SerialOpen (ComC7,9600,0,0,2000) 'EXO2
+  SerialFlush (ComC7)
+
+  '--- LI-850 Initialization ---
+  ' Open COM1 (C1/C2 control ports) at 9600 baud, 8N1, no flow control
+  ' Open ComC1: 9600 baud, 8N1, RS-232 mode
+  SerialOpen (ComC1, 9600, 0, 0, 600, 0)
+  Delay (0, 2, 2) ' Wait 2 seconds  
+    
+  ' Flush buffer  
+  SerialFlush (ComC1)
+ 
+  ' Send initial configuration string to LI-850   
+  SerialOut (ComC1, "<LI850><CFG><OUTRATE>1</OUTRATE></CFG><RS232><STRIP>TRUE</STRIP><CO2>TRUE</CO2><H2O>TRUE</H2O><CELLTEMP>TRUE</CELLTEMP><CELLPRES>TRUE</CELLPRES><IVOLT>FALSE</IVOLT><FLOWRATE>FALSE</FLOWRATE><RAW>FALSE</RAW><ECHO>FALSE</ECHO></RS232></LI850>" + CHR(13) + CHR(10), "",3, 0)
+  Delay (0, 1, 2)
+  SerialFlush (ComC1)
+
+Scan (10, Sec, 6, 0)
+    ' Measure diagnostics
+    PanelTemp (PTemp, 15000)
+    Battery (Batt_volt)
+
+    If Flag(9) = -1 Then
+        ' 1. Check if socket is open; if invalid/closed (-1 or handle <= 0), attempt to open
+        tcpip_socket_status7810 = SerialInChk(socket7810)
+
+        If (tcpip_socket_status7810 = -1) Or (socket7810 <= 0) Then
+            ' TCPOpen returns a handle (> 100) on success, or 0 on failure
+            socket7810 = TCPOpen (IP7810, 7800, 1000, 1000) 'LI-7810 live data stream port confirmed as 7800
+        EndIf
+
+        ' 2. If socket is valid, check for bytes and read
+        If socket7810 > 0 Then
+            tcpip_socket_status7810 = SerialInChk(socket7810)
+
+            ' If bytes are waiting in the buffer, read and parse
+            If tcpip_socket_status7810 > 0 Then
+                SerialInRecord (socket7810, DATA_string7810, &h44, 0, &h0A, NBR7810, 00) '&h44 = ASCII "D" - LI-COR instruments mark start of each data record with "D"
+                SplitStr (LI7810_time, DATA_string7810, CHR(09), 1, 4)
+                SplitStr (LI7810(1), DATA_string7810, CHR(09), 51, 4)
+                TimeLong7810 = (LI7810_time - (Daysto1990 * Daystosec)) - utcoffset
+            EndIf
+        EndIf
+    Else
+        ' If Flag(9) is turned off, safely close the socket
+        If socket7810 > 0 Then
+            TCPClose(socket7810)
+            socket7810 = 0
+        EndIf
+    EndIf
+
+    '--- LI-850 Passive Read and Parse ---
+    
+    ' Check if bytes exist in the C1/C2 buffer
+   
+    NBR850 = SerialInChk(ComC1)
+    If NBR850 > 0 Then   
+    ' Read string up to the Line Feed (&H0A / CHR(10))
+    ' Parameter 3 = 0 (no start header filter needed for strip mode) 
+    'SerialInRecord (ComC1, DATA_string850, 0, 0, &H0A, NBR850, 00)  
+    'SerialIn(DATA_string850, ComC1, 6, CHR(13) + CHR(10), NBR850)
+    'SerialIn (DATA_string850,ComC1,6,CRLF,NBR850)
+    ' Split space-delimited string ("414.23 9.876 25.34 101.3") into LI850 array
+      
+      SerialInRecord(ComC1, DATA_string850, &H0A, 0, &H0D0A, NBR850, 01)
+      ' Strip leading/trailing spaces
+  
+      FirstByteAsASCII = ASCII(DATA_string850(1,1))
+      SplitStr(LI850(1), DATA_string850, " ", 4, 0)
+      SerialFlush(ComC1)
+    
+    EndIf
+
+    CallTable Rad7Table
+    CallTable FLUX_7810
+    CallTable ExoTable
+    CallTable SontekTable
+
+    NextScan
+
+  SlowSequence
+    Scan (1, min, 0, 0)
+      
+      If TimeIntoInterval (0, 3, min) Then
+        SerialOut (ComC7, "0" + CHR(13), "?Command", 3, 10) 'ComPort, Output String
+        Delay (1, 500, mSec)
+        SerialOut (ComC7, "ssn" + CHR(13) + CHR(10),"",1,0)
+        Delay (1, 500, mSec)
+        SerialIn (EXO2(2), ComC7, 100, &H0D0A, 2000) 'Save ssn to EXO2(2)
+        
+        SerialOut (ComC7, "0" + CHR(13), "?Command", 3, 10) 'Call to Exo2 and wait until it's ready for command
+        Delay (1, 500, mSec)
+        SerialOut (ComC7, "sn" + CHR(13) + CHR(10), "", 1, 0)
+        Delay (1, 500, mSec)
+        SerialIn (EXO2(1), ComC7, 100, &H0D0A, 2000)
+        Delay (1, 500, mSec)
+        
+        SerialOut(ComC7, "0" + CHR(13), "?Command", 3, 10)
+        Delay (1, 500, mSec)
+        SerialOut (ComC7, "para 52 54 194 193 4 228 227 237 211 214 212 20 12" + CHR(13) + CHR(10), "", 1, 0)
+        Delay (1, 500, mSec)
+        SerialOut (ComC7, "0" + CHR(13), "?Command", 3, 10)
+        Delay (1, 500, mSec)
+        SerialOut (ComC7, "data" + CHR(13) + CHR(10), "", 1, 0)
+        Delay (1, 500, mSec)
+        SerialIn (Sonde_data, ComC7, 100, &H0D0A, 1000)
+        Delay (1, 500, mSec)
+        
+        SerialOut (ComC7, "0" + CHR(13), "?Command", 3, 10)
+        Delay (1, 500, mSec)
+        SerialOut (ComC7, "para 6 218 226 110 223 190 229 18 17 1 22 28 230 239" + CHR(13) + CHR(10), "", 1, 0)
+        Delay (1, 500, mSec)
+        SerialOut (ComC7, "0" + CHR(13), "?Command", 3, 10)
+        Delay (1, 500, mSec)
+        SerialOut (ComC7, "data" + CHR(13) + CHR(10), "", 1, 0)
+        Delay (1, 500, mSec)
+        SerialIn (Sonde_data2, ComC7, 100, &H0D0A, 2000)
+        Delay (1, 500, mSec)
+        
+        pSonde_data2 = Sonde_data2
+        
+        pSonde_data = Sonde_data
+        Sonde_data = Trim(Sonde_data)
+        Sonde_data2 = Trim(Sonde_data2)
+        
+        SplitStr (EXO(1), Sonde_data, " ", 13, 0)
+        SplitStr (EXO(14), Sonde_data2, " ", 14, 0)
+        
+        SerialFlush (ComC7)
+        SerialClose (ComC7)
+      EndIf
+      
+      If IfTime (0,3,min)
+        sontek_serialIn = SerialInChk(ComC5)
+        ' NEW START
+        'SerialOpen (ComC3,9600,0,0,2000)
+        If SerialInChk(ComC5) > 10
+          SerialIn (Sontekdata,ComC5,100,13,200)
+          'SerialInRecord (ComC5,Sonetekdata,0,108,&H0D + ">",Rad7bytes,100)'If Flag = True, exit loop.
+          'Delay (1,500,mSec)       
+          SplitStr (Sontekraw(),Sontekdata," ",26,5)
+          SerialFlush (ComC5)
+        EndIf
+      
+        ''SerialClose (ComC3)
+        For k =  2 To 26
+          Sontek(k)= CTYPE(Sontekraw(k),Float)
+        Next k
+        Sontek(1) = CTYPE(Sontekraw(1),String)
+      EndIf  
+        
+      ' Send data command to Rad7 every 5 minutes
+      If TimeIntoInterval (0, 5, min) Then
+        SerialOut (COMRS232,CHR(3) + CHR(13),"",3,10)
+        Delay (1, 500, mSec)
+        SerialOut (COMRS232,CHR(3) + "Test Com" + CHR(13),"",1,0)
+		    Delay (1, 20, Sec)
+		    SerialInRecord (COMRS232,String_RAD7,0,120,&H0D + ">",Rad7Bytes,100)
+		    SplitStr (Rad7raw(1),String_RAD7,",",23,5)
+		    SerialFlush (COMRS232)
+
+        For k = 1 To 23
+          Rad7(k) = CTYPE(Rad7raw(k), Float)
+        Next k
+      EndIf
+	  NextScan
+EndProg
