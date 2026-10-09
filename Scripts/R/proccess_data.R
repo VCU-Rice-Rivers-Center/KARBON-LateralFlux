@@ -19,16 +19,14 @@ if (nzchar(gcp_key)) {
   message("Authenticated via browser")
 }
 
-### Access Folder Contents
+### Download new data
 
-# Connect to Lateral Flux data folder
-current_id <- as_id("1NT-9tnjc82k19ECxz_SgPVQLNH0PeszL")
-archive_id <- as_id("1Pakk0VjLoAyew-wrzz6GLtXeMabrMAwN")
-
-# Specify the local path where you want to save the folder
-local_folder <- here("Data", "Raw")
-
-# Start the recursive download
-download_folder(current_id, local_folder)
+download_new_data(
+  local_folder = here("Data", "Raw"), 
+  start_date = Sys.Date() - days(100),
+  current_folder = "1NT-9tnjc82k19ECxz_SgPVQLNH0PeszL",
+  archive_folder = "1Pakk0VjLoAyew-wrzz6GLtXeMabrMAwN",
+  search_term = "LateralFlux_CR1000Xe"
+  )
 
 
