@@ -1,5 +1,6 @@
 ### Packages and Source
 source(here("Scripts", "R", "download_functions.R"))
+source(here("Scripts", "R", "processing_functions.R"))
 
 library(tidyverse)
 library(googledrive)
@@ -20,7 +21,6 @@ if (nzchar(gcp_key)) {
 }
 
 ### Download new data
-
 download_new_data(
   local_folder = here("Data", "Raw"), 
   start_date = Sys.Date() - days(100),
@@ -29,4 +29,8 @@ download_new_data(
   search_term = "LateralFlux_CR1000Xe"
   )
 
+### Process raw data and store to Processed folder
+process_raw_data(
+  days_to_include = 100
+)
 
