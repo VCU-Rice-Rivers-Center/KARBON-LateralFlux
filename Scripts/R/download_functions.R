@@ -73,11 +73,24 @@ read_data <- function(file) {
   return(data)
 }
 
+#' Download New Data from Google Drive 
+#' Modified from SERC's Dropbox download code, but for google drive: https://github.com/wilsonsj100/serc-lateral-flux/blob/dashboard/R/download_new_data.R
+#'
+#' @param local_folder string - The local folder (in this case, GitHub folder) where downloaded data should be stored
+#' @param start_date date - What date to begin looking for files
+#' @param current_folder string - Google Drive Folder ID 
+#' @param archive_folder string - Google Drive Folder ID
+#' @param search_term  string - Search term for downloading files. i.e. All data tables for this project begin with "LateralFlux_CR1000Xe". We only want to download files with this prefix.
+#'
+#' @returns NULL
+#' @export
+#'
+#' @examples
 download_new_data <- function(local_folder = here("Data", "Raw"), 
                               start_date = Sys.Date() - days(100),
                               current_folder = "1NT-9tnjc82k19ECxz_SgPVQLNH0PeszL",
                               archive_folder = "1Pakk0VjLoAyew-wrzz6GLtXeMabrMAwN",
-                              search_term = "LateralFlux") {
+                              search_term = "LateralFlux_CR1000Xe") {
   
   # Identify all files in Google Drive
   message("Looking for new data files on Google Drive")
