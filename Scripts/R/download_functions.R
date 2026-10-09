@@ -77,7 +77,7 @@ download_new_data <- function(local_folder = here("Data", "Raw"),
                               start_date = Sys.Date() - days(100),
                               current_folder = "1NT-9tnjc82k19ECxz_SgPVQLNH0PeszL",
                               archive_folder = "1Pakk0VjLoAyew-wrzz6GLtXeMabrMAwN",
-                              search_term = "LateralFlux_CR1000Xe_") {
+                              search_term = "LateralFlux") {
   
   # Identify all files in Google Drive
   message("Looking for new data files on Google Drive")
@@ -93,15 +93,72 @@ download_new_data <- function(local_folder = here("Data", "Raw"),
       !grepl("backup", name)
     )
   
-  # 
+  # Create list of dates within specified range
   possible_file_names <- format(
     seq.Date(start_date, Sys.Date(), by = "1 day"),
     "%Y%m%d"
   )
   
-  print(possible_file_names)
+  # Subset archive files to files created within specified date range
+  relevant_files <- archive_files[grepl(paste0(possible_file_names, collapse="|"), archive_files$name), ]
   
+  # Do not include NowConstTable
+  relevant_files <- relevant_files[!grepl("NewConstTable", relevant_files$name), ]
   
+  if (nrow(relevant_files) > 0) {
+    # Extract modified time variable from GDrive API
+    relevant_files <- relevant_files %>%
+      mutate(label = map(drive_resource, names)) %>%
+      unnest(c(drive_resource, label)) %>%
+      filter(label == "modifiedTime") %>%
+      select(name, id, drive_resource) %>%
+      rename(modifiedTime = drive_resource) %>%
+      mutate(modifiedTime = as_datetime(unlist(modifiedTime), format = "%Y-%m-%dT%H:%M:%OSZ")) # Google Drive API Datetime is in RFC3339 format.
+    
+    # Remove files that are already loaded and haven't been modified
+    already_loaded <- list.files(local_folder)
+    
+    # See when local files were last modified
+    loaded_file_info <- file.info(list.files(local_folder, full.names = T)) %>%
+      mutate(name = basename(row.names(.))) %>%
+      select(name, mtime)
+    
+    # Identify files in Google Drive that have been modified since last local download
+    modified <- relevant_files %>%
+      select(name, modifiedTime) %>%
+      left_join(loaded_file_info, by = "name") %>%
+      filter(modifiedTime > mtime)
+    
+    # Only process files that are new or have been modified in Google Drive
+    relevant_files <- relevant_files %>%
+      filter(!name %in% already_loaded | name %in% modified$name)
+  }
+  
+  # Load data in the current folder every time (as these files are constantly scheduling updates)
+  message("Downloading Current Data")
+  current_ids <- current_files$id
+  current_names <- current_files$name
+  map2(current_ids, current_names, 
+       \(x, y) drive_download(
+         file = x,
+         path = file.path(local_folder, y),
+         overwrite = TRUE
+       ))
+
+  # Download data from archive folder if relevant:
+  if (nrow(relevant_files) == 0) {
+    message("No new files in archive folder to download")
+  } else {
+    message("Downloading ", nrow(relevant_files), " files")
+    relevant_ids <- relevant_files$id
+    relevant_names <- relevant_files$name
+    map2(relevant_ids, relevant_names, 
+         \(x, y) drive_download(
+           file = x,
+           path = file.path(local_folder, y),
+           overwrite = TRUE
+         ))
+  }
 }
 
 
