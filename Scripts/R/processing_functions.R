@@ -12,7 +12,7 @@
 #' @export
 #'
 #' @examples
-proccess_raw_data <- function(days_to_include = 100) {
+process_raw_data <- function(days_to_include = 100) {
   
   # List files in the local folder
   files <- list.files(here("Data", "Raw"), full.names = T)

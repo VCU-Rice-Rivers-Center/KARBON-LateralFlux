@@ -1,10 +1,10 @@
 ### Packages and Source
-source(here("Scripts", "R", "download_functions.R"))
-source(here("Scripts", "R", "processing_functions.R"))
-
 library(tidyverse)
 library(googledrive)
 library(here)
+
+source(here("Scripts", "R", "download_functions.R"))
+source(here("Scripts", "R", "processing_functions.R"))
 
 ### Authentication 
 
