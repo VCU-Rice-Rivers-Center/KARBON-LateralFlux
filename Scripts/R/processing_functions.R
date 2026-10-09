@@ -3,6 +3,15 @@
 ### Functions for Processing Data Tables ###
 ############################################
 
+#' Process Raw Data and Store to CSV
+#' Modified from: https://github.com/wilsonsj100/serc-lateral-flux/blob/dashboard/R/generate_dashboard_outputs.R
+#'
+#' @param days_to_include integer - number of days to be included in the final outputs
+#'
+#' @returns NULL - but writes several dfs to CSVs
+#' @export
+#'
+#' @examples
 proccess_raw_data <- function(days_to_include = 100) {
   
   # List files in the local folder
