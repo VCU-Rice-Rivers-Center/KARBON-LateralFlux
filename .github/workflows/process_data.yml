@@ -1,0 +1,38 @@
+name: Process Data 
+
+on:
+  workflow_dispatch:
+  schedule:
+  - cron: "45 15 * * 1-5"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: 
+      image: rocker/tidyverse:4.2
+    permissions:
+      contents: write
+
+    steps:
+      - run: git config --system --add safe.directory '*'
+      
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: create-yaml
+            
+      - name: Process latest data
+        run: |
+          Rscript ./R/packages.R
+          Rscript ./R/process_data.R
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          
+      - name: Commit and push
+        run: |
+          git config --global user.name 'laurenkwick'
+          git config --global user.email 'laurenkwick@gmail.com'
+          git add . 
+          git commit -m "Automated update" || echo "No changes to commit"
+          git push
