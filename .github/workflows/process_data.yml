@@ -24,8 +24,8 @@ jobs:
             
       - name: Process latest data
         run: |
-          Rscript ./R/packages.R
-          Rscript ./R/process_data.R
+          Rscript ./Scripts/R/packages.R
+          Rscript ./Scripts/R/process_data.R
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           
