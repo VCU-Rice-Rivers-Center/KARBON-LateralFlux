@@ -3,7 +3,7 @@ name: Process Data
 on:
   workflow_dispatch:
   schedule:
-  - cron: "50 19 * * 1-5"
+  - cron: "06 * * * 1-5"
 
 jobs:
   build:
@@ -18,9 +18,7 @@ jobs:
       
       - name: Check out repository
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          ref: create-yaml
+        with: { ref: create-yaml }
             
       - name: Process latest data
         run: |
