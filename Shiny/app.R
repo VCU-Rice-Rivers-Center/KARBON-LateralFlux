@@ -36,7 +36,21 @@ ui <- page_fluid(
               )
             )
     ),
-    nav_panel("Rad7 Variables")
+    nav_panel("Rad7 Variables",
+              sidebarLayout(
+                sidebarPanel(
+                  checkboxGroupInput("rad7_vars", "Variables",
+                                     choices = c(
+                                       "Relative_humidity_pct", "Radon_Bqm3", "Radon_error_Bqm3"
+                                     ),
+                                     selected = c("Radon_Bqm3", "Radon_error_Bqm3")
+                  )
+                ),
+                mainPanel(
+                  plotlyOutput("plot_rad7")
+                )
+              )
+    )
   )
 )
 
@@ -58,6 +72,10 @@ server <- function(input, output, session) {
   
   output$plot_flux <- renderPlotly({
     make_plot(flux, input$flux_vars, min_date, max_date)
+  })
+  
+  output$plot_rad7 <- renderPlotly({
+    make_plot(rad7, input$rad7_vars, min_date, max_date)
   })
   
 }
