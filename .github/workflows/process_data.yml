@@ -3,7 +3,7 @@ name: Process Data
 on:
   workflow_dispatch:
   schedule:
-  - cron: "06 * * * 1-5"
+  - cron: "49 * * * 1-5"
 
 jobs:
   build:
