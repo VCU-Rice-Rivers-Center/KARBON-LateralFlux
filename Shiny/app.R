@@ -162,10 +162,10 @@ ui <- page_fluid(
 
 server <- function(input, output, session) {
   # Grab data
-  exo <- read_csv("https://raw.githubusercontent.com/VCU-Rice-Rivers-Center/KARBON-LateralFlux/refs/heads/main/Data/Processed/KARBON_EXO.csv")
-  flux <- read_csv("https://raw.githubusercontent.com/VCU-Rice-Rivers-Center/KARBON-LateralFlux/refs/heads/main/Data/Processed/KARBON_FLUX.csv")
-  adcp <- read_csv("https://raw.githubusercontent.com/VCU-Rice-Rivers-Center/KARBON-LateralFlux/refs/heads/main/Data/Processed/KARBON_HYDROLOGY.csv")
-  rad7 <- read_csv("https://raw.githubusercontent.com/VCU-Rice-Rivers-Center/KARBON-LateralFlux/refs/heads/main/Data/Processed/KARBON_RADON.csv")
+  exo <- read_csv("https://raw.githubusercontent.com/VCU-Rice-Rivers-Center/KARBON-LateralFlux/refs/heads/create-yaml/Data/Processed/KARBON_EXO.csv")
+  flux <- read_csv("https://raw.githubusercontent.com/VCU-Rice-Rivers-Center/KARBON-LateralFlux/refs/heads/create-yaml/Data/Processed/KARBON_FLUX.csv")
+  adcp <- read_csv("https://raw.githubusercontent.com/VCU-Rice-Rivers-Center/KARBON-LateralFlux/refs/heads/create-yaml/Data/Processed/KARBON_HYDROLOGY.csv")
+  rad7 <- read_csv("https://raw.githubusercontent.com/VCU-Rice-Rivers-Center/KARBON-LateralFlux/refs/heads/create-yaml/Data/Processed/KARBON_RADON.csv")
   
 
   min_date <- min(c(exo$TIMESTAMP, flux$TIMESTAMP, adcp$TIMESTAMP, rad7$TIMESTAMP), na.rm = TRUE) %>% as_date()
