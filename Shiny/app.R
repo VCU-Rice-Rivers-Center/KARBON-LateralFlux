@@ -17,6 +17,28 @@ source(here("Shiny", "shiny_functions.R"))
 ###############
 
 ui <- page_fluid(
+  
+  tags$head(
+    tags$style(HTML("
+      .title-banner {
+        background-image: url('images/KimagesCreek.jpg');
+        background-size: cover;
+        background-position: center;
+        min-height: 150px;
+        color: white;
+        padding: 20px;
+        margin: 10px;
+      }
+      .title-banner h1 {
+        text-shadow: 0 2px 3px rgba(0,0,0,0.8);
+      }
+    "))),
+  
+  # Banner
+  div(class = "title-banner",
+      h1("KARBON Lateral Transport at RRC")
+  ),
+  
   navset_pill(
     nav_panel("Overview"),
     nav_panel("Exo Variables",
@@ -33,7 +55,7 @@ ui <- page_fluid(
                 ),
                 mainPanel(
                   plotlyOutput("plot_exo",
-                               width = "70vw", height = "90vh")
+                               width = "70vw", height = "70vh")
                 )
               )
     ),
@@ -50,7 +72,7 @@ ui <- page_fluid(
                 ),
                 mainPanel(
                   plotlyOutput("plot_adcp",
-                               width = "70vw", height = "90vh")
+                               width = "70vw", height = "70vh")
                 )
               )
     ),
@@ -67,7 +89,7 @@ ui <- page_fluid(
               ),
               mainPanel(
                 plotlyOutput("plot_flux",
-                             width = "70vw", height = "90vh")
+                             width = "70vw", height = "70vh")
               )
             )
     ),
@@ -83,7 +105,7 @@ ui <- page_fluid(
                 ),
                 mainPanel(
                   plotlyOutput("plot_rad7",
-                               width = "70vw", height = "90vh")
+                               width = "70vw", height = "70vh")
                 )
               )
     )
