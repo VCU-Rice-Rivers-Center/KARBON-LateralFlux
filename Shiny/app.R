@@ -8,8 +8,9 @@ library(tidyverse)
 library(bslib)
 library(plotly)
 library(ggplot2)
+library(here)
 
-source("shiny_functions.R")
+source(here("Shiny", "shiny_functions.R"))
 
 ###############
 ### UI Code ###
@@ -18,8 +19,39 @@ source("shiny_functions.R")
 ui <- page_fluid(
   navset_pill(
     nav_panel("Overview"),
-    nav_panel("Exo Variables"),
-    nav_panel("ADCP Variables"),
+    nav_panel("Exo Variables",
+              sidebarLayout(
+                sidebarPanel(
+                  checkboxGroupInput("exo_vars", "Variables",
+                                     choices = c(
+                                       "DO_mgL", "FDOM_RFU", "Chlorophyll_ugL", "Conductivity",
+                                       "DO_saturation", "Salinity_PPT", "TDS_mgL", "pH", "Temp_C",
+                                       "Depth_m"
+                                     ), 
+                                     selected = c("Depth_m", "Salinity_PPT")
+                  )
+                ),
+                mainPanel(
+                  plotlyOutput("plot_exo")
+                )
+              )
+    ),
+    nav_panel("ADCP Variables",
+              sidebarLayout(
+                sidebarPanel(
+                  checkboxGroupInput("adcp_vars", "Variables", 
+                                     choices = c(
+                                       "Water_depth_m", "Flowrate_ms", "Index_velocity_ms",
+                                       "Mean_velocity_ms"
+                                     ),
+                                     selected = c("Water_depth_m", "Index_velocity_ms")
+                  )
+                ),
+                mainPanel(
+                  plotlyOutput("plot_adcp")
+                )
+              )
+    ),
     nav_panel("Flux Variables",
               sidebarLayout(
                 sidebarPanel(
@@ -76,6 +108,14 @@ server <- function(input, output, session) {
   
   output$plot_rad7 <- renderPlotly({
     make_plot(rad7, input$rad7_vars, min_date, max_date)
+  })
+  
+  output$plot_adcp <- renderPlotly({
+    make_plot(adcp, input$adcp_vars, min_date, max_date)
+  })
+  
+  output$plot_exo <- renderPlotly({
+    make_plot(exo, input$exo_vars, min_date, max_date)
   })
   
 }
