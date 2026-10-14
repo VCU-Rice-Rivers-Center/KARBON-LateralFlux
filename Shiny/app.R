@@ -23,7 +23,7 @@ ui <- page_fluid(
   tags$head(
     tags$style(HTML("
       .title-banner {
-        background-image: 'www/images/KimagesCreek.jpg';
+        background-image: url('Shiny/www/images/KimagesCreek.jpg');
         background-size: cover;
         background-position: center;
         min-height: 150px;
