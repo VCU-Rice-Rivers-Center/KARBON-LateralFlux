@@ -18,6 +18,8 @@ source(here("Shiny", "shiny_functions.R"))
 
 ui <- page_fluid(
   
+  theme = bs_theme(bootswatch = "sandstone"),
+  
   tags$head(
     tags$style(HTML("
       .title-banner {
