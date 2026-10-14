@@ -11,7 +11,7 @@ make_plot <- function(data, vars, start, end) {
   p <- ggplot(recent, aes(TIMESTAMP, value, color = name)) +
     geom_point(size = 0.3) +
     theme_grey() +
-    facet_wrap(~name, scales = "free_y") +
+    facet_wrap(~name, scales = "fixed") +
     coord_cartesian(
       xlim = c(
         lubridate::ymd(start, tz = "EST"),

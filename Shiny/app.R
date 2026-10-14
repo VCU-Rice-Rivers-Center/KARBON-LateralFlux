@@ -32,6 +32,9 @@ ui <- page_fluid(
       .title-banner h1 {
         text-shadow: 0 2px 3px rgba(0,0,0,0.8);
       }
+      .nav-pills {
+        margin: 10px;
+      }
     "))),
   
   # Banner
