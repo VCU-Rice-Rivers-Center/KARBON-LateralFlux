@@ -29,10 +29,11 @@ ui <- page_fluid(
                                        "Depth_m"
                                      ), 
                                      selected = c("Depth_m", "Salinity_PPT")
-                  )
+                  ), width = 3
                 ),
                 mainPanel(
-                  plotlyOutput("plot_exo")
+                  plotlyOutput("plot_exo",
+                               width = "70vw", height = "90vh")
                 )
               )
     ),
@@ -45,10 +46,11 @@ ui <- page_fluid(
                                        "Mean_velocity_ms"
                                      ),
                                      selected = c("Water_depth_m", "Index_velocity_ms")
-                  )
+                  ), width = 3
                 ),
                 mainPanel(
-                  plotlyOutput("plot_adcp")
+                  plotlyOutput("plot_adcp",
+                               width = "70vw", height = "90vh")
                 )
               )
     ),
@@ -61,10 +63,11 @@ ui <- page_fluid(
                                        "CO2_LI850","H2O_LI850","CellTemp_LI850","CellPres_LI850"
                                      ),
                                      selected = c("CH4", "CO2_LI850")
-                  )
+                  ), width = 3
               ),
               mainPanel(
-                plotlyOutput("plot_flux")
+                plotlyOutput("plot_flux",
+                             width = "70vw", height = "90vh")
               )
             )
     ),
@@ -76,10 +79,11 @@ ui <- page_fluid(
                                        "Relative_humidity_pct", "Radon_Bqm3", "Radon_error_Bqm3"
                                      ),
                                      selected = c("Radon_Bqm3", "Radon_error_Bqm3")
-                  )
+                  ), width = 3
                 ),
                 mainPanel(
-                  plotlyOutput("plot_rad7")
+                  plotlyOutput("plot_rad7",
+                               width = "70vw", height = "90vh")
                 )
               )
     )
