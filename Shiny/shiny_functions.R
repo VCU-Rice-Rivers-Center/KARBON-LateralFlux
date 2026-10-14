@@ -10,7 +10,7 @@ make_plot <- function(data, vars, start, end) {
   
   p <- ggplot(recent, aes(TIMESTAMP, value, color = name)) +
     geom_point(size = 0.3) +
-    theme_classic() +
+    theme_grey() +
     facet_wrap(~name, scales = "free_y") +
     coord_cartesian(
       xlim = c(
@@ -19,7 +19,9 @@ make_plot <- function(data, vars, start, end) {
       )
     ) +
     theme(axis.title.x = element_blank(), legend.position = "none",
-          axis.text.x = element_text(angle = 45, hjust = 1)) 
+          axis.text.x = element_text(angle = 45, hjust = 1),
+          strip.text = element_text(size = 14, face = "bold")) 
+  
   
   plotly::ggplotly(p, tooltip = c("TIMESTAMP", "value"))
 }
