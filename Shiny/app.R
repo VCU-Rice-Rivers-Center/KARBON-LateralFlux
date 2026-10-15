@@ -125,10 +125,10 @@ ui <- page_fluid(
                   h3("Variables:"),
                   checkboxGroupInput("flux_vars", label=NULL,
                                      choices = c(
-                                       "H2O", "CH4", "cavity_p", "cavity_t",
-                                       "CO2_LI850","H2O_LI850","CellTemp_LI850","CellPres_LI850"
+                                       "H2O_7810", "CH4_7810", "CellPres_7810", "CellPres_7810",
+                                       "CO2_850","H2O_850","CellTemp_850","CellPres_850"
                                      ),
-                                     selected = c("CH4", "CO2_LI850")
+                                     selected = c("CH4_7810", "CO2_850")
                   ), width = 3
               ),
               mainPanel(

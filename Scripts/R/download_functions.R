@@ -88,8 +88,8 @@ read_data <- function(file) {
 #' @examples
 download_new_data <- function(local_folder = here("Data", "Raw"), 
                               start_date = Sys.Date() - days(100),
-                              current_folder = "1NT-9tnjc82k19ECxz_SgPVQLNH0PeszL",
-                              archive_folder = "1Pakk0VjLoAyew-wrzz6GLtXeMabrMAwN",
+                              current_folder,
+                              archive_folder,
                               search_term = "LateralFlux_CR1000Xe") {
   
   # Identify all files in Google Drive
