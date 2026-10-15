@@ -23,5 +23,5 @@ make_plot <- function(data, vars, start, end) {
           strip.text = element_text(size = 14, face = "bold")) 
   
   
-  plotly::ggplotly(p, tooltip = c("TIMESTAMP", "value"))
+  plotly::ggplotly(p, tooltip = c("TIMESTAMP", "value"), dynamicTicks = TRUE)
 }
