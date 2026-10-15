@@ -99,15 +99,15 @@ process_raw_data <- function(days_to_include = 100) {
       TIMESTAMP = ymd_hms(TIMESTAMP, tz = TIMEZONE)
     ) %>%
     rename(
-      H2O = H2O_7810,
-      CH4 = CH4_7810,
-      cavity_p = CellPres_7810, 
-      cavity_t = CellTemp_7810,
-      CO2_LI850 = CO2_850,
-      H2O_LI850 = H2O_850,
-      CellTemp_LI850 = CellTemp_850,
-      CellPres_LI850 = CellPres_850
-    )
+      H2O_7810 = H2O,
+      CH4_7810 = CH4,
+      CellPres_7810 = cavity_p, 
+      CellTemp_7810 = cavity_t,
+      CO2_850 = CO2_LI850,
+      H2O_850 = H2O_LI850,
+      CellTemp_850 = CellTemp_LI850,
+      CellPres_850 = CellPres_LI850
+    ) %>%
     select(all_of(c("TIMESTAMP", flux_cols))) %>%
     filter(as.Date(TIMESTAMP) > Sys.Date() - days(days_to_include))
   
