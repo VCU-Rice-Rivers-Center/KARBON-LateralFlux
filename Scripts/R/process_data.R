@@ -10,8 +10,6 @@ source(here("Scripts", "R", "processing_functions.R"))
 
 # Fetch the key from the system environment (if running an action from GitHub)
 gcp_key <- Sys.getenv("GCP_SA_KEY")
-current_id <- Sys.getenv("CURRENT_FOLDER_ID")
-archive_id <- Sys.getenv("ARCHIVE_FOLDER_ID")
 
 # If running locally, authenticate via browser
 if (nzchar(gcp_key)) {
@@ -26,8 +24,8 @@ if (nzchar(gcp_key)) {
 download_new_data(
   local_folder = here("Data", "Raw"), 
   start_date = Sys.Date() - days(100),
-  current_folder = current_id,
-  archive_folder = archive_id,
+  current_folder = "1NT-9tnjc82k19ECxz_SgPVQLNH0PeszL",
+  archive_folder = "1Pakk0VjLoAyew-wrzz6GLtXeMabrMAwN",
   search_term = "LateralFlux_CR1000Xe"
   )
 
