@@ -107,7 +107,7 @@ process_raw_data <- function(days_to_include = 100) {
       H2O_850 = H2O_LI850,
       CellTemp_850 = CellTemp_LI850,
       CellPres_850 = CellPres_LI850
-    )
+    ) %>%
     select(all_of(c("TIMESTAMP", flux_cols))) %>%
     filter(as.Date(TIMESTAMP) > Sys.Date() - days(days_to_include))
   
