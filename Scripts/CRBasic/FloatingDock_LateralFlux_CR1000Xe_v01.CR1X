@@ -575,7 +575,7 @@ Scan (10, Sec, 6, 0)
         Sonde_data2 = Trim(Sonde_data2)
         
         SplitStr (EXO(1), Sonde_data, " ", 10, 0)
-        SplitStr (EXO(14), Sonde_data2, " ", 11, 0)
+        SplitStr (EXO(11), Sonde_data2, " ", 11, 0)
         
         SerialFlush (ComC7)
         SerialClose (ComC7)
