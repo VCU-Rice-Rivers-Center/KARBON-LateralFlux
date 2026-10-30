@@ -1,0 +1,22 @@
+﻿SERC Variable Name,RS-232 Number
+Date,52
+Time,54
+Conductivity,4
+FDOM_QSU,228
+FDOM_RSU,227
+NLF_conductivity,237
+ODO_sat,211
+ODO_local,214
+ODO_MgL,212
+Salinity_PPT,12
+Specific_Conductivity_uScm,6
+TDS_mg_L,110
+Turbidity_FNU,223
+TSS_MgL,190
+Wiper_Position_mv,229
+pH,18
+pH_mv,17
+Temp_C,1
+Battery_v,28
+Cable_v,230
+Wiper_Current_ma,239
