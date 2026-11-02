@@ -230,7 +230,7 @@ Units Perc_submergance = percent
 Units IceScore = integer
 
 '--- EXO2 Variables ---'
-Public EXO(27)
+Public EXO(21)
 Public EXO2(4) As String *72
 
 'Array definition
@@ -243,37 +243,44 @@ Public pSonde_data2 As String *1000 'SNs
 'Alias declaration EXO2 Sonde
 Alias EXO(1)=Date
 Alias EXO(2)=Time
-Alias EXO(3)=Chlorophyll_RFU
-Alias EXO(4)=Chlorophyll_ugL
-Alias EXO(5)=Conductivity
-Alias EXO(6)=FDOM_QSU
-Alias EXO(7)=FDOM_RFU
-Alias EXO(8)=NLF_conductivity
-Alias EXO(9)=ODO_sat
-Alias EXO(10)=ODO_local
-Alias EXO(11)=ODO_MgL
-Alias EXO(12)=Pressure_psia
-Alias EXO(13)=Salinity_PPT
-Alias EXO(14)=Specific_Conductivity_uScm
-Alias EXO(15)=BGA_PE_RFU
-Alias EXO(16)=BGA_PE_ugL
-Alias EXO(17)=TDS_mg_L
-Alias EXO(18)=Turbidity_FNU
-Alias EXO(19)=TSS_MgL
-Alias EXO(20)=Wiper_Position_mv
-Alias EXO(21)=pH
-Alias EXO(22)=pH_mv
-Alias EXO(23)=Temp_C
-Alias EXO(24)=Depth_m
-Alias EXO(25)=Battery_v
-Alias EXO(26)=Cable_v
-Alias EXO(27)=Wiper_Current_ma
+Alias EXO(3)=Conductivity
+Alias EXO(4)=FDOM_QSU
+Alias EXO(5)=FDOM_RFU
+Alias EXO(6)=NLF_conductivity
+Alias EXO(7)=ODO_sat
+Alias EXO(8)=ODO_local
+Alias EXO(9)=ODO_MgL
+Alias EXO(10)=Salinity_PPT
+Alias EXO(11)=Specific_Conductivity_uScm
+Alias EXO(12)=TDS_mg_L
+Alias EXO(13)=Turbidity_FNU
+Alias EXO(14)=TSS_MgL
+Alias EXO(15)=Wiper_Position_mv
+Alias EXO(16)=pH
+Alias EXO(17)=pH_mv
+Alias EXO(18)=Temp_C 
+Alias EXO(19)=Battery_v
+Alias EXO(20)=Cable_v
+Alias EXO(21)=Wiper_Current_ma
+
+'Params not measured, but from SERC CRBasic
+'Alias EXO(3)=Chlorophyll_RFU
+'Alias EXO(4)=Chlorophyll_ugL
+'Alias EXO(10)=Pressure_psia
+'Alias EXO(13)=BGA_PE_RFU
+'Alias EXO(16)=BGA_PE_ugL
+'Alias EXO(24)=Depth_m
+'Units Chlorophyll_RFU = RFU
+'Units Chlorophyll_ugL = ug/L
+'Units Pressure_psia =psia
+'Units BGA_PE_RFU = RFU
+'Units BGA_PE_ugL =ug/L
+'Units Depth_m = meters
+
 
 'Unit declaration EXO2 Sonde
 Units Date = mmddyy
 Units Time = hhmmss
-Units Chlorophyll_RFU = RFU
-Units Chlorophyll_ugL = ug/L
 Units Conductivity = uS/cm
 Units FDOM_QSU = QSU
 Units FDOM_RFU = RFU
@@ -281,18 +288,14 @@ Units NLF_conductivity = uS/cm
 Units ODO_sat = %Sat
 Units ODO_local = %SatLocal
 Units ODO_MgL = mg/L
-Units Pressure_psia =psia
 Units Salinity_PPT =ppt
 Units Specific_Conductivity_uScm =uS/cm
-Units BGA_PE_RFU = RFU
-Units BGA_PE_ugL =ug/L
 Units TDS_mg_L = mg/L
 Units Turbidity_FNU = FNU
 Units Wiper_Position_mv =mv
 Units pH = pH
 Units pH_mv = mv
 Units Temp_C = Celsius
-Units Depth_m = meters
 Units Battery_v = volts
 Units Cable_v= volts
 Units Wiper_Current_ma= ma
@@ -396,8 +399,8 @@ DataTable (ExoTable, Flag(8), -1)
   DataInterval (0,6,Min,10)
   Sample (1, Date, IEEE4)
   Sample(1,Time,IEEE4)
-  Sample(1,Chlorophyll_RFU,IEEE4)
-  Sample(1,Chlorophyll_ugL,IEEE4)
+  'Sample(1,Chlorophyll_RFU,IEEE4)
+  'Sample(1,Chlorophyll_ugL,IEEE4)
   Sample(1,Conductivity,IEEE4)
   Sample(1,FDOM_QSU,IEEE4)
   Sample(1,FDOM_RFU,IEEE4)
@@ -405,18 +408,18 @@ DataTable (ExoTable, Flag(8), -1)
   Sample(1,ODO_sat,IEEE4)
   Sample(1,ODO_local,IEEE4)
   Sample(1,ODO_MgL,IEEE4)
-  Sample(1,Pressure_psia,IEEE4)
+  'Sample(1,Pressure_psia,IEEE4)
   Sample(1,Salinity_PPT,IEEE4)
   Sample(1,Specific_Conductivity_uScm,IEEE4)
-  Sample(1,BGA_PE_RFU,IEEE4)
-  Sample(1,BGA_PE_ugL,IEEE4)
+  'Sample(1,BGA_PE_RFU,IEEE4)
+  'Sample(1,BGA_PE_ugL,IEEE4)
   Sample(1,TDS_mg_L,IEEE4)
   Sample(1,Turbidity_FNU,IEEE4)
   Sample(1,Wiper_Position_mv,IEEE4)
   Sample(1,pH,IEEE4)
   Sample(1,pH_mv,IEEE4)
   Sample(1,Temp_C,IEEE4)
-  Sample(1,Depth_m,IEEE4)
+  'Sample(1,Depth_m,IEEE4)
   Sample(1, Battery_v,IEEE4)
   Sample(1, Cable_v,IEEE4)
   Sample(1, Wiper_Current_ma,IEEE4)
@@ -545,7 +548,7 @@ Scan (10, Sec, 6, 0)
         
         SerialOut(ComC7, "0" + CHR(13), "?Command", 3, 10)
         Delay (1, 500, mSec)
-        SerialOut (ComC7, "para 52 54 194 193 4 228 227 237 211 214 212 20 12" + CHR(13) + CHR(10), "", 1, 0)
+        SerialOut (ComC7, "para 52 54 4 228 227 237 211 214 212 12" + CHR(13) + CHR(10), "", 1, 0)
         Delay (1, 500, mSec)
         SerialOut (ComC7, "0" + CHR(13), "?Command", 3, 10)
         Delay (1, 500, mSec)
@@ -556,7 +559,7 @@ Scan (10, Sec, 6, 0)
         
         SerialOut (ComC7, "0" + CHR(13), "?Command", 3, 10)
         Delay (1, 500, mSec)
-        SerialOut (ComC7, "para 6 218 226 110 223 190 229 18 17 1 22 28 230 239" + CHR(13) + CHR(10), "", 1, 0)
+        SerialOut (ComC7, "para 6 110 223 190 229 18 17 1 28 230 239" + CHR(13) + CHR(10), "", 1, 0)
         Delay (1, 500, mSec)
         SerialOut (ComC7, "0" + CHR(13), "?Command", 3, 10)
         Delay (1, 500, mSec)
@@ -571,8 +574,8 @@ Scan (10, Sec, 6, 0)
         Sonde_data = Trim(Sonde_data)
         Sonde_data2 = Trim(Sonde_data2)
         
-        SplitStr (EXO(1), Sonde_data, " ", 13, 0)
-        SplitStr (EXO(14), Sonde_data2, " ", 14, 0)
+        SplitStr (EXO(1), Sonde_data, " ", 10, 0)
+        SplitStr (EXO(11), Sonde_data2, " ", 11, 0)
         
         SerialFlush (ComC7)
         SerialClose (ComC7)
