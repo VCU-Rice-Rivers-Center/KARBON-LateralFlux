@@ -27,9 +27,8 @@ process_raw_data <- function(days_to_include = 100) {
   
   # Select columns for dashboard
   exo_cols <- c(
-    "DO_mgL", "FDOM_RFU", "Chlorophyll_ugL", "Conductivity",
-    "DO_saturation", "Salinity_PPT", "TDS_mgL", "pH", "Temp_C",
-    "Depth_m"
+    "DO_mgL", "FDOM_RFU", "Conductivity",
+    "DO_saturation", "Salinity_PPT", "TDS_mgL", "pH", "Temp_C"
   )
   
   sontek_cols <- c(
