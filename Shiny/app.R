@@ -82,11 +82,10 @@ ui <- page_fluid(
                   h3("Variables:"),
                   checkboxGroupInput("exo_vars", label=NULL,
                                      choices = c(
-                                       "DO_mgL", "FDOM_RFU", "Chlorophyll_ugL", "Conductivity",
-                                       "DO_saturation", "Salinity_PPT", "TDS_mgL", "pH", "Temp_C",
-                                       "Depth_m"
+                                       "DO_mgL", "FDOM_RFU", "Conductivity",
+                                       "DO_saturation", "Salinity_PPT", "TDS_mgL", "pH", "Temp_C"
                                      ), 
-                                     selected = c("Depth_m", "Salinity_PPT")
+                                     selected = c("FDOM_RFU", "Salinity_PPT")
                   ), width = 3
                 ),
                 mainPanel(
