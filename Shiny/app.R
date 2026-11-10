@@ -3,8 +3,10 @@
 ### Load Packages ###
 #####################
 
+# rsconnect::writeManifest(here("Shiny"))
+
 library(shiny)
-library(dplyr)
+library(tidyverse)
 library(bslib)
 library(plotly)
 library(ggplot2)
