@@ -8,7 +8,11 @@ make_plot <- function(data, vars, start, end) {
     select(all_of(c("TIMESTAMP", vars))) %>%
     pivot_longer(vars)
   
-  p <- ggplot(recent, aes(TIMESTAMP, value, color = name)) +
+  if (nrow(recent) > 10000) {
+    recent = slice_sample(recent, prop = 0.1)
+  }
+  
+  p <- ggplot(data = recent, aes(TIMESTAMP, value, color = name)) +
     geom_point(size = 0.3) +
     theme_grey() +
     facet_wrap(~name, scales = "free_y") +

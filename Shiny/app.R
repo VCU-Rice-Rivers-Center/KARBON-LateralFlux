@@ -4,7 +4,7 @@
 #####################
 
 library(shiny)
-library(tidyverse)
+library(dplyr)
 library(bslib)
 library(plotly)
 library(ggplot2)
