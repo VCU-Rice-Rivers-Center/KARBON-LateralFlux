@@ -578,7 +578,7 @@ Scan (10, Sec, 6, 0)
         SplitStr (EXO(11), Sonde_data2, " ", 11, 0)
         
         SerialFlush (ComC7)
-        SerialClose (ComC7)
+        'SerialClose (ComC7)
       EndIf
       
       If IfTime (0,3,min)
