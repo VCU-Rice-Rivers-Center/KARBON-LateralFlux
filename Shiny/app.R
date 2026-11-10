@@ -67,7 +67,7 @@ ui <- page_fluid(
   
   # Banner
   div(class = "title-banner",
-      h1("KARBON Lateral Transport at RRC")
+      h1("KARBON Lateral Flux at Rice Rivers Center")
   ),
   
   navset_pill(
